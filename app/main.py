@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from api import routes_relevance
-from services.scorer import TopicRelevanceScorer
 from contextlib import asynccontextmanager
+
+from app.api import routes_relevance
+from app.services.scorer import TopicRelevanceScorer
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

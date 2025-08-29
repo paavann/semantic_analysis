@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 
-from utils.download_punkt import download_punkt
+from app.utils.download_punkt import download_punkt
 download_punkt()
 from nltk.tokenize.punkt import PunktSentenceTokenizer
 
@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-from models.relevance_model import Relevance
+from app.models.relevance_model import Relevance
 
 
 logging.basicConfig(level=logging.INFO)
