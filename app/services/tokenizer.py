@@ -52,4 +52,4 @@ def split_text(text: str, max_chunk_chars) -> List[str]:
 
     chunks = [chunk for chunk in chunks if len(chunk.strip()) >= 10]
     logger.info(f"text split into {len(chunks)} chunks")
-    return chunks
+    return chunks, sentences

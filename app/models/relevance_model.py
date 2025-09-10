@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Optional, Any
 
 
 class Relevance(BaseModel):
@@ -10,3 +10,4 @@ class Relevance(BaseModel):
     chunk_count: int
     relevance_chunk_count: int
     method_used: str
+    sensitivity: Optional[Dict[str, Any]]

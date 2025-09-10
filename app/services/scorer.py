@@ -3,7 +3,8 @@ import numpy as np
 from app.models.relevance_model import Relevance
 from app.services.tokenizer import split_text
 from app.services.biencoder import BiEncoder
-from app.services.calculate_relevance import calculate_relevance_metrics, determine_label
+from app.services.calculate_relevance import calculate_relevance_metrics
+from app.services.classifier import SensitivityClassifier
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,10 +14,12 @@ logger = logging.getLogger(__name__)
 class TopicRelevanceScorer:
     def __init__(self,
                  bi_encoder_model: str="all-roberta-large-v1",
+                 sensitivity_classifier: str="unitary/toxic-bert",
                  max_chunk_chars: int=550,):
         
         self.max_chunk_chars = max_chunk_chars
         self.scorer = BiEncoder(bi_encoder_model)
+        self.sensitivity_classifier = SensitivityClassifier(sensitivity_classifier)
     
     def score_relevance(self,
                         text: str,
@@ -26,7 +29,7 @@ class TopicRelevanceScorer:
         logger.info(f"analyzing relevance for topic: {topic}")
 
         logger.info(f"splitting text into chunks...")
-        chunks = split_text(text, self.max_chunk_chars)
+        chunks, sentences = split_text(text, self.max_chunk_chars)
         if not chunks:
             return Relevance(0.0, 0.0, "none", [], 0, 0, "none")
 
@@ -39,8 +42,12 @@ class TopicRelevanceScorer:
         evidence_indices = np.argsort(bi_scores)[-evidence_count:][::-1]
         evidence = [(float(bi_scores[i]), chunks[i][:200] + "..." if len(chunks[i]) > 200 else chunks[i]) 
                     for i in evidence_indices]
+        
+        logger.info("running sensitivity classification")
+        sensitivity_results = self.sensitivity_classifier.classifier_score(sentences)
+        doc_toxicity_scores = self.sensitivity_classifier.aggregate_scores(sensitivity_results)
 
-        logger.info(f"analysis complete. overall score: {overall_score:.3f}, relevance: {relevance_percentage:.3f}, label: {label}")
+        logger.info(f"analysis complete. overall score: {overall_score:.3f}, relevance: {relevance_percentage:.3f}, label: {label}, sensitivity: {doc_toxicity_scores}")
         return Relevance(
             overall_score=overall_score,
             relevance_percentage=relevance_percentage,
@@ -48,5 +55,6 @@ class TopicRelevanceScorer:
             evidence=evidence,
             chunk_count=len(chunks),
             relevance_chunk_count=relevant_count,
-            method_used="bi_encoder"
+            method_used="bi_encoder",
+            sensitivity=doc_toxicity_scores,
         )
