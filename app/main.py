@@ -31,7 +31,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/")
 async def root():
-    return { "message": "hello world!" }
+    return { "message": "api for semantic and sensitivity analysis. accepts a topic and .txt file: '/model/bi-encoder/'" }
 
 
 app.include_router(routes_relevance.router)
